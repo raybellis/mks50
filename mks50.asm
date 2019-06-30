@@ -1,4 +1,6 @@
+$CONDONLY
 $INCLUDE (mks50.mcu)    ; include 8053 type SFR symbol definition file for MKS50 -- must be used with ASEM [MKS50.MCU in same folder as ASEMW.EXE]!!!!
+
 ;
 ; 	D52 V3.3.6 8052 Disassembly
 ;
@@ -17,12 +19,28 @@ $INCLUDE (mks50.mcu)    ; include 8053 type SFR symbol definition file for MKS50
 ;
 ; Odd... this assembler doesn't seem to support FALSE/TRUE, so 0 and 1 are used here instead!
 ;
-CFW				EQU	0		; whether or not any custom firmware features are enabled (0 = stock, 1 = CFW)
-OLED_DISPLAY	EQU	0		; whether or not this ROM should be assembled true 16x1 display support instead of 8x2 side-by-side "faux 16x1"
-							; Note: 0 = stock 8x2 addressing (LCDs), 1 = modified 16x1 addressing (OLEDs) or some very old rare LCDs
-							; Note: Same idea as Jeroen Oldenhof Alpha Juno 2 OLED fix
-ALL_NOTES_OFF	EQU 0		; whether or not to enable the All Notes Off MIDI command (0 = CFW, 1 = stock firmware)
-							; Note: Same idea as butoba.net fix for Alpha Juno 2
+
+;CFW		EQU	0	; whether or not any custom firmware features are enabled (0 = stock, 1 = CFW)
+;OLED_DISPLAY	EQU	0	; whether or not this ROM should be assembled true 16x1 display support instead of 8x2 side-by-side "faux 16x1"
+				; Note: 0 = stock 8x2 addressing (LCDs), 1 = modified 16x1 addressing (OLEDs) or some very old rare LCDs
+				; Note: Same idea as Jeroen Oldenhof Alpha Juno 2 OLED fix
+;ALL_NOTES_OFF	EQU	0	; whether or not to enable the All Notes Off MIDI command (0 = CFW, 1 = stock firmware)
+				; Note: Same idea as butoba.net fix for Alpha Juno 2
+
+IFDEF CUSTOM
+
+CFW		EQU 1
+OLED_DISPLAY	EQU 1
+ALL_NOTES_OFF	EQU 1
+
+ELSE
+
+CFW		EQU	0
+OLED_DISPLAY	EQU	0
+ALL_NOTES_OFF	EQU	0
+
+ENDIF
+
 ;
 ; ======================
 ; OLED ADDRESSING (1x16)
@@ -53,6 +71,15 @@ ALL_NOTES_OFF	EQU 0		; whether or not to enable the All Notes Off MIDI command (
 ; 
 ; Note: Unseen area extends out ---> to $88 for first half of line, but $C8 for second half of line!!!! Very confusing!
 ; Note: In this mode, display shifting affects both the 1st half and 2nd half of the screen!!!
+
+SETPOS	MACRO	REG, POS
+IF OLED_DISPLAY = 0
+	MOV	REG, #(080H + 040H * (POS / 8) + (POS MOD 8))		; set screen position
+ELSE
+	MOV	REG, #(080H + POS)	; set screen position
+ENDIF
+ENDM
+
 ;
 ;
 ;
@@ -785,11 +812,7 @@ X04AC:	MOV	A,#14H
 	MOV	A,#31H
 	ADD	A,R2
 	MOV	R2,A
-	if OLED_DISPLAY = 0
-		MOV	A,#0C7H				; probably display related -- OLED would be $8F
-	else
-		MOV	A,#8FH				; OLED fix	
-	endif	
+	SETPOS	A, 15
 	LCALL	MapDisplayAddress
 	LCALL	DispFillx8
 X04C1:	AJMP	X03D4
@@ -2828,11 +2851,7 @@ PrintFullStr:
 	MOV	A,#80H				; force cursor to beginning to 1st line
 	ACALL	PrintHalfStr	; writes first 8 characters of a full 16-character string
 	ACALL	Delay2A			; display timing sub-routine?
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to 2nd line (standard 8x2 hack)
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line (true 16x1 addressing)
-	endif
+	SETPOS	A, 8		; move cursor to second half of line
 	ACALL	PrintHalfStr	; writes second 8 characters of a full 16-character string
 	ACALL	Delay2A			; display timing sub-routine?
 	RET	
@@ -2906,11 +2925,7 @@ X10E0:
 	RR	A
 	SWAP	A
 	MOV	7EH,A
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C1H						; display positioning? 89H for OLED
-	else
-		MOV A,#89H						; 89H for OLED
-	endif
+	SETPOS	A, 9					; move position to column 9
 	LCALL	DispFillx8
 	SETB	28H.5
 	RET	
@@ -2935,11 +2950,7 @@ MorePrint:
 	MOV	A,R3
 	ADD	A,#31H
 	MOV	R2,A
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C2H			; sets line 2, 3rd character position
-	else
-		MOV	A,#8AH			; sets line 1, 11th character position
-	endif
+	SETPOS	A, 10				; move position to column 10 (0-indexed)
 	JB	27H.1,X1119
 	MOV	A,#84H						; display positioning?
 X1119:	LCALL	DispFillx8
@@ -3092,11 +3103,7 @@ X120D:	JNB	ACC.4,X122A
 	JNB	28H.3,X1225
 	MOV	R2,#42H
 X1225:
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif
+	SETPOS	A, 8				; force cursor to column 8
 	LCALL	DispFillx8
 X122A:	RET	
 ;
@@ -3307,11 +3314,7 @@ X13A0:	JNB	ACC.4,X13BD
 	JNB	28H.3,X13B8
 	MOV	R2,#62H
 X13B8:
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif
+	SETPOS	A, 8				; force cursor to column 8
 	LCALL	DispFillx8
 X13BD:	RET	
 ;
@@ -3385,11 +3388,7 @@ X1428:
 	MOVX	@R0,A
 	ACALL	Delay2A
 	MOV	R0,#0
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif
+	SETPOS	A, 8				; force cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R6
@@ -3403,11 +3402,7 @@ X1428:
 	MOV	DPTR,#okPromptStr	; ' ok?' string
 	LCALL	X1C73
 	ACALL	Delay2A
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif	
+	SETPOS	A, 8				; force cursor to column 8
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
 	if OLED_DISPLAY = 0
@@ -3685,11 +3680,7 @@ X15E6:
 ;
 X15F6:
 	MOV	R0,#0
-	if OLED_DISPLAY = 0
-		MOV	A,#0C0H				; set display position to 2nd half of 8x2 style display?
-	else
-		MOV	A,#88H				; OLED fix	
-	endif	
+	SETPOS	A, 8				; move cursor to columm 8
 	MOVX	@R0,A
 X15FB:
 	INC	R0
@@ -3888,21 +3879,13 @@ X1705:
 	INC	A						; increases patch name position counter by one (because we're moving one space ---> here)
 	MOV	R2,#14H					; shift cursor position to right
 	CJNE	A,#2,X171F
-	if OLED_DISPLAY = 0	
-		MOV	R2,#0C0H			; force cursor to beginning to 2nd line (standard 8x2 hack)
-	else
-		MOV	R2,#88H				; force cursor to second half of 1st line (true 16x1 addressing)
-	endif
+	SETPOS	R2, 8					; move cursor to column 8
 	SJMP	X171F
 ;
 X170F:
 	JNZ	X1717
 	MOV	A,#9					; position counter goes to fixed value of 9 because display cannot go any more to the right and last patch name character?
-	if OLED_DISPLAY = 0
-		MOV	R2,#0C7H				; 16th character position
-	else
-		MOV	R2,#8FH					; OLED fix -- last character in display
-	endif	
+	SETPOS	R2, 15					; move cursor to column 15
 	SJMP	X171F
 ;
 X1717:
@@ -4004,11 +3987,7 @@ X179A:	SWAP	A
 	LCALL	HalfPrinter
 	ACALL	Delay2A
 	MOV	R0,#0
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif
+	SETPOS	A, 8			; move cursor to column 8
 	MOVX	@R0,A
 X17B2:	INC	R0
 	CLR	A
@@ -4091,11 +4070,7 @@ X1849:
 	ACALL	GetSubString
 	ACALL	HalfPrinter
 	LCALL	Delay2A
-	if OLED_DISPLAY = 0
-		MOV	R4,#0C0H		; 8x2 hack
-	else
-		MOV	R4,#88H			; OLED fix
-	endif	
+	SETPOS	R4, 8				; move cursor to column 8
 	MOV	R3,#3DH				; '=' character, maybe?
 	AJMP	X191B
 ;
@@ -4243,11 +4218,7 @@ X1908:	XCH	A,R2
 X1916:	MOV	@R1,A
 X1917:
 	MOV	R3,#7EH				; '->' (right arrow) character, maybe?
-	if OLED_DISPLAY = 0
-		MOV	R4,#0C4H		; possibly display related, if so $8C is proper value for OLED
-	else
-		MOV	R4,#8CH			; OLED fix
-	endif
+	SETPOS	R4, 12				; move cursor to column 12
 X191B:	MOV	A,78H
 	RL	A
 	MOV	R2,A
@@ -4691,11 +4662,7 @@ X1B80:	MOV	A,78H
 X1B94:	ACALL	HalfPrinter
 	LCALL	Delay2A
 	MOV	R0,#0
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to "2nd" line
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line
-	endif	
+	SETPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 X1B9E:	INC	R0
 	CLR	A
@@ -5140,11 +5107,7 @@ X1E0D:
 	MOV	R6,#46H			; 'F' character
 	MOV	R7,#46H			; 'F' character
 X1E1B:	MOV	R0,#0
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C5H			; display positioning -- sets line 2, 6th character position
-	else
-		MOV	A,#8DH			; sets line 1, 14th character position -- OLED fix
-	endif
+	SETPOS	A, 13			; move cursor to column 13
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R5
@@ -5209,11 +5172,7 @@ X1E6A:	MOV	B,#0AH
 	ADD	A,#30H				; number to ASCII equivalent?
 	MOV	R4,A
 	MOV	R0,#0
-	if OLED_DISPLAY = 0
-		MOV	A,#0C0H			; probably sets display position to line 2, 1st character (8x2 LCD) -- would be $88 for true 1x16 displays
-	else
-		MOV	A,#88H			; OLED fix	
-	endif
+	SETPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R6				; value of 2 is possible, but can also be space
@@ -5359,11 +5318,7 @@ X1F61:	MOVX	@DPTR,A
 X1F62:
 	MOV	R4,A
 	MOV	R0,#0
-	if OLED_DISPLAY = 0
-		MOV	A,#0C0H				; force cursor to beginning of 2nd line (8x2 display style) -- would be $88 for true 1x16
-	else
-		MOV	A,#88H				; OLED fix	
-	endif
+	SETPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,#20H				; ' ' space character
@@ -6099,20 +6054,12 @@ X245A:	SETB	28H.6
 ;
 X246A:	CJNE	R4,#4,X246D
 X246D:	JNC	X2476
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C2H			; sets line 2, 3rd character position
-	else
-		MOV	A,#8AH			; sets line 1, 11th character position
-	endif	
+	SETPOS	A, 10				; move cursor to column 10
 	MOV	DPTR,#RunStr		; ' -Run-'		(6 characters long)
 	SJMP	X247B
 ;
 X2476:
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C3H			; sets line 2, 4th character position
-	else
-		MOV	A,#8BH			; sets line 1, 12th character position
-	endif	
+	SETPOS	A, 11				; move cursor to column 11
 	MOV	DPTR,#dotDotdotStr	; '.....'		(5 characters long, so needs to be shifted over one compared to -Run- string)		
 X247B:	MOV	R0,#0
 	MOVX	@R0,A
@@ -6561,11 +6508,7 @@ X2752:
 	MOV	DPTR,#EndStr			; '..END...' string
 	SETB	24H.2
 X2757:		; fall-through from '..END...' or jumped to by 'CANCEL..'
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C2H			; sets line 2, 3rd character position
-	else
-		MOV	A,#8AH			; sets line 1, 11th character position
-	endif
+	SETPOS	A, 10				; move cursor to column 10
 	MOV	R0,#0
 	LCALL	MapDisplayAddress
 	MOVX	@R0,A
@@ -6861,11 +6804,8 @@ X298C:	LCALL	X2787
 X2994:
 	MOV	P2,#80H
 	MOV	R0,#0
-	if OLED_DISPLAY = 0		; ###### UNCONFIRMED THAT THIS IS A DISPLAY FUNCTION! ######
-		MOV	A,#0C7H			; appears to be last digit in display
-	else
-		MOV	A,#8FH			; seems like a screen position (OLED would be $8F)	
-	endif
+	SETPOS	A, 15			; ###### UNCONFIRMED THAT THIS IS A DISPLAY FUNCTION! ######
+					; appears to be last digit in display
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R6				; this is apparently a hex value from $00 to $09
@@ -7561,11 +7501,7 @@ X34A3:	MOVX	A,@DPTR
 X34BC:	ACALL	HPrntLp
 	MOV	A,#80H				; force cursor to beginning to 1st line
 	ACALL	HalfPrint
-	if OLED_DISPLAY = 0	
-		MOV	A,#0C0H			; force cursor to beginning to 2nd line (standard 8x2 hack)
-	else
-		MOV	A,#88H			; force cursor to second half of 1st line (true 16x1 addressing)
-	endif	
+	SETPOS	A, 8				; move cursor to column 8
 	ACALL	HalfPrint
 	SJMP	X34A3
 ;
