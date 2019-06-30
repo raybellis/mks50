@@ -1,10 +1,17 @@
 PROJ	= mks50
 
-${PROJ}.bin:	${PROJ}.hex
-	hexbin $(^) $(@)
+all:	${PROJ}-2.1.bin ${PROJ}-custom.bin
 
-${PROJ}.hex:	${PROJ}.asm
-	asem ${^}
+${PROJ}-2.1.hex:	${PROJ}.asm
+	asem ${^} ${@}
+
+${PROJ}-custom.hex:	${PROJ}.asm
+	asem -d CUSTOM ${^} ${@}
 
 clean:
-	$(RM) ${PROJ}.hex ${PROJ}.lst ${PROJ}.bin
+	$(RM) *.hex *.lst *.bin
+
+.SUFFIXES: .hex .bin
+
+.hex.bin:
+	hexbin $(^) $(@)
