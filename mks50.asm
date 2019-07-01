@@ -73,11 +73,20 @@ ENDIF
 ; Note: In this mode, display shifting affects both the 1st half and 2nd half of the screen!!!
 
 IF OLED_DISPLAY = 0
-SETPOS	MACRO	REG, POS
+
+; settings for LCD
+SCRINIT	EQU	38H			; $20 + $10 for 8-bit data bus (vs 4-bit default), $08 for 2-line [5x8 character size is default]
+
+SCRPOS	MACRO	REG, POS
 	MOV	REG, #(080H + 040H * (POS / 8) + (POS MOD 8))		; set screen position
 ENDM
+
 ELSE
-SETPOS	MACRO	REG, POS
+
+; settings for OLED
+SCRINIT	EQU	30H			; $20 + $10 for 8-bit data bus (vs 4-bit default) [1-line and 5x8 character size are defaults]  
+
+SCRPOS	MACRO	REG, POS
 	MOV	REG, #(080H + POS)	; set screen position
 ENDM
 ENDIF
@@ -814,7 +823,7 @@ X04AC:	MOV	A,#14H
 	MOV	A,#31H
 	ADD	A,R2
 	MOV	R2,A
-	SETPOS	A, 15
+	SCRPOS	A, 15
 	LCALL	MapDisplayAddress
 	LCALL	DispFillx8
 X04C1:	AJMP	X03D4
@@ -2736,52 +2745,32 @@ X0F6F:	SETB	C
 ;
 InitLCD:
 	ACALL	MapDisplayAddress
-	MOV	R2,#1EH					; R2 sets delay time
+	MOV	R2,#1EH				; R2 sets delay time
 	ACALL	Delay2B				; delay time?
-	if OLED_DISPLAY = 0
-		MOV	A,#38H				; sets LCD data interface command -- $20 = data interface command, plus the following options:
-		                        ; 	$10 for 8-bit data bus (vs 4-bit default), $08 for 2-line [5x8 character size is default]
-	else
-		MOV	A,#30H				; $20 + $10 for 8-bit data bus (vs 4-bit default) [1-line and 5x8 character size are defaults]	
-	endif	
+	MOV	A,#SCRINIT
 	ACALL	DisplayCmnd
-	MOV	R2,#0BH					; R2 sets delay time
+	MOV	R2,#0BH				; R2 sets delay time
 	ACALL	Delay2B
-	if OLED_DISPLAY = 0
-		MOV	A,#38H				; sets LCD data interface command -- $20 = data interface command, plus the following options:
-		                        ; 	$10 for 8-bit data bus (vs 4-bit default), $08 for 2-line [5x8 character size is default]
-	else
-		MOV	A,#30H				; $20 + $10 for 8-bit data bus (vs 4-bit default) [1-line and 5x8 character size are defaults]	
-	endif
+	MOV	A,#SCRINIT
 	ACALL	DisplayCmnd
 	ACALL	Delay2A
-	if OLED_DISPLAY = 0
-		MOV	A,#38H				; sets LCD data interface command -- $20 = data interface command, plus the following options:
-		                        ; 	$10 for 8-bit data bus (vs 4-bit default), $08 for 2-line [5x8 character size is default]
-	else
-		MOV	A,#30H				; $20 + $10 for 8-bit data bus (vs 4-bit default) [1-line and 5x8 character size are defaults]	
-	endif
+	MOV	A,#SCRINIT
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
-	if OLED_DISPLAY = 0
-		MOV	A,#38H				; sets LCD data interface command -- $20 = data interface command, plus the following options:
-		                        ; 	$10 for 8-bit data bus (vs 4-bit default), $08 for 2-line [5x8 character size is default]
-	else
-		MOV	A,#30H				; $20 + $10 for 8-bit data bus (vs 4-bit default) [1-line and 5x8 character size are defaults]	
-	endif
+	MOV	A,#SCRINIT
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
-	MOV	A,#0CH					; send "cursor invisible" command to LCD
+	MOV	A,#0CH				; send "cursor invisible" command to LCD
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
-	MOV	A,#6					; Entry Mode -- sets increment cursor rather than decrement, essentially shift cursor right by x LCD command
+	MOV	A,#6				; Entry Mode -- sets increment cursor rather than decrement, essentially shift cursor right by x LCD command
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
-	MOV	A,#1					; clear LCD command
+	MOV	A,#1				; clear LCD command
 	ACALL	DisplayCmnd
 	ACALL	Delay2A
 	ACALL	Delay2A
-	MOV	R3,#8					; sets outer loop counter
+	MOV	R3,#8				; sets outer loop counter
 	MOV	R4,#40H
 	MOV	DPTR,#CtrlStr
 X103B:	MOV	R2,#8
@@ -2853,7 +2842,7 @@ PrintFullStr:
 	MOV	A,#80H				; force cursor to beginning to 1st line
 	ACALL	PrintHalfStr	; writes first 8 characters of a full 16-character string
 	ACALL	Delay2A			; display timing sub-routine?
-	SETPOS	A, 8		; move cursor to second half of line
+	SCRPOS	A, 8		; move cursor to second half of line
 	ACALL	PrintHalfStr	; writes second 8 characters of a full 16-character string
 	ACALL	Delay2A			; display timing sub-routine?
 	RET	
@@ -2927,7 +2916,7 @@ X10E0:
 	RR	A
 	SWAP	A
 	MOV	7EH,A
-	SETPOS	A, 9					; move position to column 9
+	SCRPOS	A, 9					; move position to column 9
 	LCALL	DispFillx8
 	SETB	28H.5
 	RET	
@@ -2952,7 +2941,7 @@ MorePrint:
 	MOV	A,R3
 	ADD	A,#31H
 	MOV	R2,A
-	SETPOS	A, 10				; move position to column 10 (0-indexed)
+	SCRPOS	A, 10				; move position to column 10 (0-indexed)
 	JB	27H.1,X1119
 	MOV	A,#84H						; display positioning?
 X1119:	LCALL	DispFillx8
@@ -3105,7 +3094,7 @@ X120D:	JNB	ACC.4,X122A
 	JNB	28H.3,X1225
 	MOV	R2,#42H
 X1225:
-	SETPOS	A, 8				; force cursor to column 8
+	SCRPOS	A, 8				; force cursor to column 8
 	LCALL	DispFillx8
 X122A:	RET	
 ;
@@ -3316,7 +3305,7 @@ X13A0:	JNB	ACC.4,X13BD
 	JNB	28H.3,X13B8
 	MOV	R2,#62H
 X13B8:
-	SETPOS	A, 8				; force cursor to column 8
+	SCRPOS	A, 8				; force cursor to column 8
 	LCALL	DispFillx8
 X13BD:	RET	
 ;
@@ -3390,7 +3379,7 @@ X1428:
 	MOVX	@R0,A
 	ACALL	Delay2A
 	MOV	R0,#0
-	SETPOS	A, 8				; force cursor to column 8
+	SCRPOS	A, 8				; force cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R6
@@ -3404,7 +3393,7 @@ X1428:
 	MOV	DPTR,#okPromptStr	; ' ok?' string
 	LCALL	X1C73
 	ACALL	Delay2A
-	SETPOS	A, 8				; force cursor to column 8
+	SCRPOS	A, 8				; force cursor to column 8
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
 	if OLED_DISPLAY = 0
@@ -3682,7 +3671,7 @@ X15E6:
 ;
 X15F6:
 	MOV	R0,#0
-	SETPOS	A, 8				; move cursor to columm 8
+	SCRPOS	A, 8				; move cursor to columm 8
 	MOVX	@R0,A
 X15FB:
 	INC	R0
@@ -3881,13 +3870,13 @@ X1705:
 	INC	A						; increases patch name position counter by one (because we're moving one space ---> here)
 	MOV	R2,#14H					; shift cursor position to right
 	CJNE	A,#2,X171F
-	SETPOS	R2, 8					; move cursor to column 8
+	SCRPOS	R2, 8					; move cursor to column 8
 	SJMP	X171F
 ;
 X170F:
 	JNZ	X1717
 	MOV	A,#9					; position counter goes to fixed value of 9 because display cannot go any more to the right and last patch name character?
-	SETPOS	R2, 15					; move cursor to column 15
+	SCRPOS	R2, 15					; move cursor to column 15
 	SJMP	X171F
 ;
 X1717:
@@ -3989,7 +3978,7 @@ X179A:	SWAP	A
 	LCALL	HalfPrinter
 	ACALL	Delay2A
 	MOV	R0,#0
-	SETPOS	A, 8			; move cursor to column 8
+	SCRPOS	A, 8			; move cursor to column 8
 	MOVX	@R0,A
 X17B2:	INC	R0
 	CLR	A
@@ -4072,7 +4061,7 @@ X1849:
 	ACALL	GetSubString
 	ACALL	HalfPrinter
 	LCALL	Delay2A
-	SETPOS	R4, 8				; move cursor to column 8
+	SCRPOS	R4, 8				; move cursor to column 8
 	MOV	R3,#3DH				; '=' character, maybe?
 	AJMP	X191B
 ;
@@ -4220,7 +4209,7 @@ X1908:	XCH	A,R2
 X1916:	MOV	@R1,A
 X1917:
 	MOV	R3,#7EH				; '->' (right arrow) character, maybe?
-	SETPOS	R4, 12				; move cursor to column 12
+	SCRPOS	R4, 12				; move cursor to column 12
 X191B:	MOV	A,78H
 	RL	A
 	MOV	R2,A
@@ -4664,7 +4653,7 @@ X1B80:	MOV	A,78H
 X1B94:	ACALL	HalfPrinter
 	LCALL	Delay2A
 	MOV	R0,#0
-	SETPOS	A, 8				; move cursor to column 8
+	SCRPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 X1B9E:	INC	R0
 	CLR	A
@@ -5109,7 +5098,7 @@ X1E0D:
 	MOV	R6,#46H			; 'F' character
 	MOV	R7,#46H			; 'F' character
 X1E1B:	MOV	R0,#0
-	SETPOS	A, 13			; move cursor to column 13
+	SCRPOS	A, 13			; move cursor to column 13
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R5
@@ -5174,7 +5163,7 @@ X1E6A:	MOV	B,#0AH
 	ADD	A,#30H				; number to ASCII equivalent?
 	MOV	R4,A
 	MOV	R0,#0
-	SETPOS	A, 8				; move cursor to column 8
+	SCRPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,R6				; value of 2 is possible, but can also be space
@@ -5320,7 +5309,7 @@ X1F61:	MOVX	@DPTR,A
 X1F62:
 	MOV	R4,A
 	MOV	R0,#0
-	SETPOS	A, 8				; move cursor to column 8
+	SCRPOS	A, 8				; move cursor to column 8
 	MOVX	@R0,A
 	INC	R0
 	MOV	A,#20H				; ' ' space character
@@ -6056,12 +6045,12 @@ X245A:	SETB	28H.6
 ;
 X246A:	CJNE	R4,#4,X246D
 X246D:	JNC	X2476
-	SETPOS	A, 10				; move cursor to column 10
+	SCRPOS	A, 10				; move cursor to column 10
 	MOV	DPTR,#RunStr		; ' -Run-'		(6 characters long)
 	SJMP	X247B
 ;
 X2476:
-	SETPOS	A, 11				; move cursor to column 11
+	SCRPOS	A, 11				; move cursor to column 11
 	MOV	DPTR,#dotDotdotStr	; '.....'		(5 characters long, so needs to be shifted over one compared to -Run- string)		
 X247B:	MOV	R0,#0
 	MOVX	@R0,A
@@ -6510,7 +6499,7 @@ X2752:
 	MOV	DPTR,#EndStr			; '..END...' string
 	SETB	24H.2
 X2757:		; fall-through from '..END...' or jumped to by 'CANCEL..'
-	SETPOS	A, 10				; move cursor to column 10
+	SCRPOS	A, 10				; move cursor to column 10
 	MOV	R0,#0
 	LCALL	MapDisplayAddress
 	MOVX	@R0,A
@@ -6806,7 +6795,7 @@ X298C:	LCALL	X2787
 X2994:
 	MOV	P2,#80H
 	MOV	R0,#0
-	SETPOS	A, 15			; ###### UNCONFIRMED THAT THIS IS A DISPLAY FUNCTION! ######
+	SCRPOS	A, 15			; ###### UNCONFIRMED THAT THIS IS A DISPLAY FUNCTION! ######
 					; appears to be last digit in display
 	MOVX	@R0,A
 	INC	R0
@@ -7503,7 +7492,7 @@ X34A3:	MOVX	A,@DPTR
 X34BC:	ACALL	HPrntLp
 	MOV	A,#80H				; force cursor to beginning to 1st line
 	ACALL	HalfPrint
-	SETPOS	A, 8				; move cursor to column 8
+	SCRPOS	A, 8				; move cursor to column 8
 	ACALL	HalfPrint
 	SJMP	X34A3
 ;
