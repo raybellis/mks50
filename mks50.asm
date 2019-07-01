@@ -72,13 +72,15 @@ ENDIF
 ; Note: Unseen area extends out ---> to $88 for first half of line, but $C8 for second half of line!!!! Very confusing!
 ; Note: In this mode, display shifting affects both the 1st half and 2nd half of the screen!!!
 
-SETPOS	MACRO	REG, POS
 IF OLED_DISPLAY = 0
+SETPOS	MACRO	REG, POS
 	MOV	REG, #(080H + 040H * (POS / 8) + (POS MOD 8))		; set screen position
-ELSE
-	MOV	REG, #(080H + POS)	; set screen position
-ENDIF
 ENDM
+ELSE
+SETPOS	MACRO	REG, POS
+	MOV	REG, #(080H + POS)	; set screen position
+ENDM
+ENDIF
 
 ;
 ;
