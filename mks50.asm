@@ -7873,12 +7873,6 @@ XFF00	EQU	0FF00H			; unknown
 ; # probably references to addresses which are actually data
 ;
 XFF97	EQU	0FF97H
-X3310	EQU	3310H
-X3336	EQU	3336H
-X334C	EQU	334CH
-X3360	EQU	3360H
-X3362	EQU	3362H
-X3364	EQU	3364H
 ;
 	END
 ;
