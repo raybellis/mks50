@@ -29,9 +29,9 @@ $INCLUDE (mks50.mcu)    ; include 8053 type SFR symbol definition file for MKS50
 
 IFDEF CUSTOM
 
-CFW		EQU 1
-OLED_DISPLAY	EQU 1
-ALL_NOTES_OFF	EQU 1
+CFW		EQU	1
+OLED_DISPLAY	EQU	1
+ALL_NOTES_OFF	EQU	1
 
 ELSE
 
