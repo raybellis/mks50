@@ -1,0 +1,15 @@
+Port P2 is used as a bank select register written to via gate array
+IC6 which selects whether external RAM, or the array's own internal
+peripherals are being accessed.
+
+Certain functions write to P2 and to $77, and the contents of $77
+are then re-written back to P2 after a serial interrupt.
+
+   80:00 - 80:07   : LCD output buffer ($1078)
+   90:             : Unknown ($2787)
+   a0:             : Unknown ($279e)
+   e0:00 - e7:bf   : Tone Data
+   fc:             : Unknown ($03bc)
+   fd:             : MIDI TX buffer? ($06e9)
+   fe:             : Unknown ($03b5)
+   ff:             : Unknown ($259c)

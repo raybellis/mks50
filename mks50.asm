@@ -11,8 +11,6 @@ $INCLUDE (mks50.mcu)    ; include 8053 type SFR symbol definition file for MKS50
 ;	"ASEMW mk50-cfw.asm"
 ;	"hexbinw mk50-cfw.hex mks50-cfw.bin"
 ;
-;
-;
 ; ########################
 ; # CONDITIONAL ASSEMBLY #
 ; ########################
@@ -146,7 +144,7 @@ X0038:
 	MOVX	A,@R0
 	MOV	SBUF,A
 	INC	R0
-X003C:	MOV	P2,77H
+X003C:	MOV	P2,LAST_BANK
 	JB	RI,X0046
 	MOV	A,R5
 	POP	PSW
@@ -304,7 +302,7 @@ X012D:	CJNE	R2,#0F0H,X0135
 ;
 X0132:	ORL	7BH,#0CH
 X0135:	MOV	R4,#2
-X0137:	MOV	P2,77H
+X0137:	MOV	P2,LAST_BANK
 X013A:	MOV	A,R5
 	POP	PSW
 	RETI	
@@ -645,7 +643,7 @@ X037A:
 ;
 ;
 X0387:
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	MOV	61H,A
 	LCALL	X14FB
 	CLR	23H.3
@@ -670,15 +668,15 @@ X03B3:	AJMP	X03D4
 ;
 ;
 ;
-X03B5:
-	MOV	77H,#0FEH
+SelectBank_FE:
+	MOV	LAST_BANK,#0FEH
 	MOV	P2,#0FEH
 	RET	
 ;
 ;
 ;
-X03BC:
-	MOV	77H,#0FCH
+SelectBank_FC:
+	MOV	LAST_BANK,#0FCH
 	MOV	P2,#0FCH
 	RET	
 ;
@@ -694,7 +692,7 @@ X03C3:
 	ACALL	TxMIDIbyte
 	MOV	A,R5
 	ACALL	TxMIDIbyte
-X03D4:	ACALL	X03BC
+X03D4:	ACALL	SelectBank_FC
 	MOV	DPTR,#X001C			; some numeric table
 	MOV	A,RB3R7
 	CJNE	A,RB3R6,X03DF
@@ -764,7 +762,7 @@ X043E:	JC	X03C3
 X0443:	JC	X0447
 	AJMP	X03C3
 ;
-X0447:	ACALL	X03B5
+X0447:	ACALL	SelectBank_FE
 	MOV	R0,#6
 	MOV	A,R5
 	JNB	28H.1,X0471
@@ -835,7 +833,7 @@ X04AC:	MOV	A,#14H
 	ADD	A,R2
 	MOV	R2,A
 	ScrPos	A, 15
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	DispFillx8
 X04C1:	AJMP	X03D4
 ;
@@ -985,7 +983,7 @@ X0580:	ACALL	X072B
 	JNB	23H.2,X0598
 	MOV	R2,#3AH
 X0598:	MOV	A,#81H						; display positioning?
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	DispFillx8
 X05A0:	RET	
 ;
@@ -1104,7 +1102,7 @@ X0635:	MOV	A,R7
 ;
 X0639:
 	MOV	DPTR,#X001C
-	ACALL	X03B5
+	ACALL	SelectBank_FE
 	JB	23H.0,X065C
 	MOV	R0,#6
 	CLR	F0
@@ -1227,7 +1225,7 @@ X06E3:
 ; # Tx MIDI SysEx byte? -- likely!
 ;
 TxMIDIbyte:
-	MOV	77H,#0FDH
+	MOV	LAST_BANK,#0FDH
 	MOV	P2,#0FDH
 	MOV	TH0,A
 	MOV	A,RB3R5
@@ -1281,7 +1279,7 @@ X0733:	ANL	A,#0FH
 ;
 ;
 X0738:
-	ACALL	X03B5
+	ACALL	SelectBank_FE
 	MOV	R0,#6
 	MOV	A,#0C0H					; possibly display positioning related
 X073E:	MOVX	@R0,A
@@ -1289,7 +1287,7 @@ X073E:	MOVX	@R0,A
 	CJNE	R0,#0DH,X073E
 	SJMP	X075C
 ;
-X0745:	ACALL	X03B5
+X0745:	ACALL	SelectBank_FE
 	MOV	R0,#6
 X0749:	MOVX	A,@R0
 	SETB	ACC.7
@@ -1302,7 +1300,7 @@ X0749:	MOVX	A,@R0
 	MOV	2CH,A
 	MOV	2DH,A
 	MOV	2EH,A
-X075C:	ACALL	X03B5
+X075C:	ACALL	SelectBank_FE
 	MOV	R0,#0DH
 	MOV	A,#1
 X0762:	MOVX	@R0,A
@@ -1328,7 +1326,7 @@ X0772:	CLR	20H.7
 	MOV	6BH,A
 	MOV	6CH,A
 	MOV	R0,#0
-	ACALL	X03B5
+	ACALL	SelectBank_FE
 X078B:	MOVX	@R0,A
 	INC	R0
 	CJNE	R0,#6,X078B
@@ -1343,7 +1341,7 @@ X0794:
 X079A:
 	MOV	R4,#4
 	MOV	R7,#10H
-X079E:	ACALL	X03B5
+X079E:	ACALL	SelectBank_FE
 	LCALL	X0CED
 	RET	
 ;
@@ -1407,7 +1405,7 @@ X07D5:
 	ENDM	
 ;
 X0800:
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R4,#5
 	MOV	R7,#12H
 	ACALL	X0CED
@@ -2755,7 +2753,7 @@ X0F6F:	SETB	C
 ; ##############################
 ;
 InitLCD:
-	ACALL	MapDisplayAddress
+	ACALL	SelectBank_80
 	MOV	R2,#1EH				; R2 sets delay time
 	ACALL	Delay2B				; delay time?
 	MOV	A,#SCRINIT
@@ -2840,11 +2838,11 @@ HalfStrLp:
 	CJNE	R0,#8,HalfStrLp	; keep printing characters until all 8 are finished
 	RET	
 ;
-; # DISPLAY RELATED -- probably sets P2 to high-byte of display address
+; Setup IC6 for access to its internal registers
 ;
-MapDisplayAddress:
-	MOV	77H,#80H
-	MOV	P2,#80H				; sets display address? ($80xx)
+SelectBank_80:
+	MOV	LAST_BANK,#80H
+	MOV	P2,#80H			; sets display address? ($80xx)
 	RET	
 ;
 ; # DISPLAY RELATED -- WRITE STRING -- print full 16 character strings
@@ -2861,7 +2859,7 @@ PrintFullStr:
 ;
 ;
 X108C:
-	ACALL	MapDisplayAddress
+	ACALL	SelectBank_80
 	MOV	DPTR,#XA000
 	MOV	A,#0FBH
 	MOVX	@DPTR,A
@@ -3229,14 +3227,14 @@ X1303:	JNB	27H.3,X135D
 	MOV	DPTR,#XFE90
 	MOV	B,#6
 X1313:	LCALL	GetSubString
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R0,#1AH
 X131B:	MOVX	A,@R0
 	MOVX	@DPTR,A
 	INC	DPTR
 	INC	R0
 	CJNE	R0,#20H,X131B
-	ACALL	MapDisplayAddress
+	ACALL	SelectBank_80
 	ACALL	X1507
 	AJMP	X151A
 ;
@@ -3259,7 +3257,7 @@ X1347:	MOVX	@DPTR,A
 	DJNZ	R2,X1347
 	MOV	7DH,#0
 	LCALL	X075C
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	MOV	DPTR,#ChordOKStr				; 'Enter  CHORD     ok ?' string
 	ACALL	PrintFullStr
 	LJMP	X1DCE
@@ -3345,7 +3343,7 @@ X13F1:	ACALL	X1623
 	ACALL	X1631
 	LCALL	X2341
 	MOV	DPTR,#XFE59
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R0,#63H
 X1400:	MOVX	A,@DPTR
 	ANL	A,#3FH
@@ -3413,7 +3411,7 @@ X145F:	MOV	7EH,A
 	RET	
 ;
 X1462:
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	A,7EH
 	MOV	C,28H.3
 	MOV	ACC.6,C
@@ -3494,7 +3492,7 @@ X14C9:	MOVX	A,@R0
 	INC	R0
 	INC	DPTR
 	DJNZ	R2,X14C9
-X14D9:	ACALL	MapDisplayAddress
+X14D9:	ACALL	SelectBank_80
 	ACALL	X14F8
 	AJMP	X151A
 ;
@@ -3518,7 +3516,7 @@ X14F3:
 X14F8:	MOV	78H,#80H
 X14FB:	JNB	28H.1,X1503
 	LCALL	X0745
-	ACALL	MapDisplayAddress
+	ACALL	SelectBank_80
 X1503:	ACALL	CursorOff
 	CLR	24H.2
 X1507:	MOV	27H,#0
@@ -3538,7 +3536,7 @@ CursorOff:
 ; # VERY LIKELY SOMETHING DISPLAY RELATED
 ;
 X151A:
-	ACALL	MapDisplayAddress
+	ACALL	SelectBank_80
 	MOV	DPTR,#XFE63
 	JNB	23H.3,X1525
 	MOV	DPTR,#XFE59
@@ -3585,7 +3583,7 @@ X153C:	MOVX	A,@DPTR
 	LCALL	X0745
 	CLR	23H.5
 X1570:	INC	DPTR
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R0,#63H
 X1576:	MOVX	A,@DPTR
 	ANL	A,#3FH
@@ -3593,7 +3591,7 @@ X1576:	MOVX	A,@DPTR
 	INC	DPTR
 	INC	R0
 	CJNE	R0,#6DH,X1576
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	RET	
 ;
 X1583:	MOV	C,ACC.5
@@ -3688,7 +3686,7 @@ X15FB:
 ; # display related
 ;
 X1606:
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	A,6AH
 	ANL	A,#0FH
 	MOV	B,#6
@@ -3700,7 +3698,7 @@ X1618:	MOVX	A,@DPTR
 	INC	DPTR
 	INC	R0
 	CJNE	R0,#20H,X1618			; keep hoping back until value is $20 (32 decimal)
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	RET	
 ;
 ;
@@ -3714,7 +3712,7 @@ X1623:
 	RET	
 ;
 X1631:
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R1,#40H				; '@' character? maybe not...
 	MOV	R0,#44H				; 'D' character? maybe not...
 	MOV	R2,#3
@@ -3766,7 +3764,7 @@ X1670:	MOVX	A,@R1
 	INC	R1
 	CJNE	R0,#48H,X1670
 	LCALL	X072B
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	RET	
 ;
 ;
@@ -4017,7 +4015,7 @@ X17CC:	CLR	25H.1
 	ENDM
 ;
 X1800:
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	MOV	A,27H
 	ANL	A,#0F8H
 	JNZ	X1814
@@ -4640,7 +4638,7 @@ X1B6B:	LCALL	X072B
 	MOV	RB3R6,A
 	MOV	RB3R7,A
 	LCALL	X0745
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	SETB	ES
 	SJMP	X1B80
 ;
@@ -5045,7 +5043,7 @@ X1DB1:	MOV	A,7EH
 	LCALL	X1A00
 	MOV	7EH,A
 X1DB8:	; falls through from above, or jumped to by SETTING MENU
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	MOV	A,R3						; this must decide which sub-routine needs to be run (must be no more than a value of 10 decimal, apparently)
 	MOV	DPTR,#X1DC4					; small table of offsets
 	MOVC	A,@A+DPTR
@@ -5217,7 +5215,7 @@ X1EA4:	RET
 X1EA5:
 	JNB	28H.0,X1EA4
 	LCALL	X075C
-X1EAB:	LCALL	X03B5
+X1EAB:	LCALL	SelectBank_FE
 	MOV	R0,#6DH
 	MOV	R1,#1AH
 X1EB2:	MOVX	A,@R0
@@ -5235,7 +5233,7 @@ X1EBC:	MOVX	@R1,A
 	SETB	28H.6
 	CLR	25H.1
 	MOV	DPTR,#ChordMemStr		; 'CHORD MEM. No.01' string
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	PrintFullStr
 X1ED3:	RET	
 ;
@@ -5244,7 +5242,7 @@ X1ED4:	JNB	25H.1,X1ED3
 	JNB	ACC.7,X1F05
 	CLR	ACC.7
 	MOV	R3,A
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R0,#6DH
 	MOV	R1,#1AH
 X1EE6:	MOVX	A,@R1
@@ -5256,7 +5254,7 @@ X1EE6:	MOVX	A,@R1
 	INC	R1
 	INC	R0
 	CJNE	R0,#73H,X1EE6
-X1EF6:	LCALL	MapDisplayAddress
+X1EF6:	LCALL	SelectBank_80
 	MOV	A,R3
 	SJMP	X1F17
 ;
@@ -5542,7 +5540,7 @@ X214C:	JNC	X2166
 	CLR	ACC.7
 	MOVX	@DPTR,A
 	CJNE	R7,#65H,X2164
-X2156:	LCALL	X03B5
+X2156:	LCALL	SelectBank_FE
 	MOV	R0,#1AH
 	MOV	R1,#6DH
 X215D:	MOVX	A,@R1
@@ -5571,7 +5569,7 @@ X2173:	JC	X21A3
 	SETB	F0
 	MOV	R0,#59H
 X2187:	MOV	R1,#73H
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 X218C:	MOVX	A,@R1
 	MOVX	@R0,A
 	INC	R0
@@ -5579,7 +5577,7 @@ X218C:	MOVX	A,@R1
 	CJNE	R1,#7DH,X218C
 X2193:	MOV	C,F0
 	MOV	23H.3,C
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	X14FB
 	LCALL	X151A
 X21A0:	LJMP	X03D4
@@ -5839,7 +5837,7 @@ X2325:	MOV	A,27H
 	JNB	23H.2,X2333
 	MOV	R2,#3AH
 X2333:	MOV	A,#81H						; display positioning?
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	DispFillx8
 	AJMP	X21A0
 ;
@@ -5931,7 +5929,7 @@ X239F:	LCALL	TxMIDIbyte
 	CJNE	R3,#24H,X2351
 	MOV	R1,#59H
 X23A8:	MOV	R3,#0AH
-X23AA:	LCALL	X03B5
+X23AA:	LCALL	SelectBank_FE
 	MOVX	A,@R1
 	LCALL	TxMIDIbyte
 	INC	R1
@@ -6001,7 +5999,7 @@ X2407:	MOV	R3,#35H
 	MOV	R2,#40H				; R2 sets Level #, probably
 	LCALL	SysExHandTx
 	MOV	R1,#1AH
-X2410:	LCALL	X03B5
+X2410:	LCALL	SelectBank_FE
 	MOVX	A,@R1
 	JB	ACC.7,X2428
 	MOV	C,ACC.6
@@ -6233,7 +6231,7 @@ X2591:	MOV	A,R5
 	JNZ	X25D2
 	MOV	DPH,73H
 	MOV	DPL,74H
-	MOV	77H,#0FFH
+	MOV	LAST_BANK,#0FFH
 	MOV	P2,#0FFH
 	MOV	R0,#0
 X25A4:	MOVX	A,@R0
@@ -6499,7 +6497,7 @@ X273D:
 	MOV	DPTR,#BulkMisStr		; 'Bulk DT-MISMATCH' string
 X2740:	; # fall-through from above, or jumped to by Mem strings above
 	MOV	SP,#0DH
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	LCALL	PrintFullStr
 	SETB	24H.2
 	SJMP	X2765
@@ -6514,7 +6512,7 @@ X2752:
 X2757:		; fall-through from '..END...' or jumped to by 'CANCEL..'
 	ScrPos	A, 10				; move cursor to column 10
 	MOV	R0,#0
-	LCALL	MapDisplayAddress
+	LCALL	SelectBank_80
 	MOVX	@R0,A
 	LCALL	X1C73
 	LCALL	Delay2A
@@ -6534,7 +6532,7 @@ X2775:	MOVX	@R0,A
 	CLR	P1.3
 	LJMP	X0304
 ;
-X2787:	MOV	77H,#90H
+X2787:	MOV	LAST_BANK,#90H
 	MOV	P2,#90H
 	MOV	A,7EH
 	SETB	ACC.7
@@ -6547,7 +6545,7 @@ X2787:	MOV	77H,#90H
 ;
 X2799:	MOV	A,7EH
 	CJNE	A,#0F0H,X27AE
-X279E:	MOV	77H,#0A0H
+X279E:	MOV	LAST_BANK,#0A0H
 	MOV	P2,#0A0H
 	MOVX	A,@R0
 	CPL	A
@@ -7555,7 +7553,7 @@ X3574:	CLR	A
 X357F:	
 	MOV	DPTR,#InitlzCMptnStr			; 'Initlz C.M. ptn ' string
 	LCALL	PrintFullStr
-X3585:	LCALL	X03B5
+X3585:	LCALL	SelectBank_FE
 	MOV	R0,#90H
 	MOV	R2,#10H
 	MOV	DPTR,#ChordPresets				; pattern preset table, very likely
@@ -7610,14 +7608,14 @@ X35E0:	MOV	DPTR,#X37C6			; data table of some type, very likely
 	MOV	DPTR,#X37A3				; data table of some type, very likely
 	ACALL	X3602
 	MOV	DPTR,#BASICwaveStr				; '$adj BASIC wave ' string
-X35ED:	LCALL	MapDisplayAddress
+X35ED:	LCALL	SelectBank_80
 	LCALL	PrintFullStr
 	RET	
 ;
 ; # move presets to RAM ??
 ;
 X35F4:
-	LCALL	X03B5
+	LCALL	SelectBank_FE
 	MOV	R0,#59H
 X35F9:	CLR	A
 	MOVC	A,@A+DPTR
@@ -7864,6 +7862,14 @@ RB3R4	EQU	1CH
 RB3R5	EQU	1DH
 RB3R6	EQU	1EH
 RB3R7	EQU	1FH
+
+; ########################################################
+; # EQUATES FOR INTERNAL MEMORY LOCATIONS                #
+; ########################################################
+
+LAST_BANK	EQU	77H		; copy of P2 bank register used to used
+					; P2's value after a serial interrupt
+
 ;
 ;
 ;
