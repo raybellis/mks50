@@ -6598,7 +6598,7 @@ X2834:	JB	28H.3,X2814
 	DJNZ	R5,X281E
 	DJNZ	R4,X2814
 	MOV	R6,#0
-	ACALL	X2994
+	ACALL	DisplayDigit
 	SETB	28H.3
 X2841:	SJMP	X2814
 ;
@@ -6625,7 +6625,7 @@ X2862:	MOV	R7,#0
 X286A:	MOV	R4,#0A8H
 	CJNE	A,#2,X2871
 	MOV	R4,#60H
-X2871:	ACALL	X2994
+X2871:	ACALL	DisplayDigit
 X2873:	ACALL	X28AF
 	ACALL	X28A0
 	JB	27H.0,X2892
@@ -6723,7 +6723,7 @@ X2909:	CPL	C
 	RET	
 ;
 X290B:	MOV	R6,#0
-X290D:	ACALL	X2994
+X290D:	ACALL	DisplayDigit
 	ACALL	X293C
 	MOV	A,7DH
 	MOV	R2,#41H
@@ -6736,7 +6736,7 @@ X291E:	MOV	A,R2
 	MOV	A,R6
 X2922:	ACALL	X2963
 	INC	R6
-X2925:	ACALL	X2994
+X2925:	ACALL	DisplayDigit
 	ACALL	X2948
 	INC	R6
 X292A:	MOV	A,7DH
@@ -6745,7 +6745,7 @@ X292A:	MOV	A,7DH
 ;
 X2931:	CJNE	R6,#9,X2925
 X2934:	MOV	R6,#9
-	ACALL	X2994
+	ACALL	DisplayDigit
 	ACALL	X293C
 X293A:	AJMP	X2806
 ;
@@ -6805,17 +6805,16 @@ X298C:	LCALL	X2787
 	DJNZ	R2,X297B
 	RET	
 ;
-; # Load/Save/Verify Tape related, very likely
+; Shows value in R6 as a digit in the right-hand display column
 ;
-X2994:
+DisplayDigit:
 	MOV	P2,#80H
 	MOV	R0,#0
-	ScrPos	A, 15			; ###### UNCONFIRMED THAT THIS IS A DISPLAY FUNCTION! ######
-					; appears to be last digit in display
+	ScrPos	A, 15			; go to last column
 	MOVX	@R0,A
 	INC	R0
-	MOV	A,R6				; this is apparently a hex value from $00 to $09
-	ADD	A,#30H				; convert value to ASCII, likely
+	MOV	A,R6
+	ADD	A,#30H			; convert value to ASCII
 	MOVX	@R0,A
 	SETB	ACC.7
 X29A3:	; <top of loop> falls through from above
