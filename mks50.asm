@@ -7474,27 +7474,27 @@ X34FB:	MOV	P2,#0F0H
 	MOV	R5,#35H
 	MOV	R6,#0
 X3508:	MOV	A,R2
-	ACALL	X355A
+	ACALL	WriteMemory
 	MOV	DPTR,#X3551					; data table, probably
 	MOV	R3,#9
 X3510:	CLR	A
 	MOVC	A,@A+DPTR
-	ACALL	X355A
+	ACALL	WriteMemory
 	INC	DPTR
 	DJNZ	R3,X3510
 	CLR	A
 	JNB	F0,X351D
 	MOV	A,#60H
-X351D:	ACALL	X355A
+X351D:	ACALL	WriteMemory
 	MOV	A,#3FH
-	ACALL	X355A
-	ACALL	X355A
+	ACALL	WriteMemory
+	ACALL	WriteMemory
 	MOV	A,R6
-	ACALL	X355A
+	ACALL	WriteMemory
 	MOV	A,R4
-	ACALL	X355A
+	ACALL	WriteMemory
 	MOV	A,R5
-	ACALL	X355A
+	ACALL	WriteMemory
 	INC	R5
 	CJNE	R5,#3DH,X353B
 	INC	R4
@@ -7503,11 +7503,11 @@ X351D:	ACALL	X355A
 	MOV	R4,#35H
 	INC	R6
 X353B:	MOV	A,#3FH
-	ACALL	X355A
-	ACALL	X355A
+	ACALL	WriteMemory
+	ACALL	WriteMemory
 	MOV	R3,#3
 	MOV	A,#3EH
-X3545:	ACALL	X355A
+X3545:	ACALL	WriteMemory
 	DJNZ	R3,X3545
 	INC	R2
 	CJNE	R2,#80H,X3508
@@ -7518,15 +7518,19 @@ X354D:	MOV	P2,#80H
 ;
 X3551:	
 	DB	10H,71H,14H,20H,00H,7FH,00H,0C0H,00H
+
 ;
+; Writes to a memory location R0 in bank P2, incrementing
+; R0 and also incrementing P2 to point to the next bank if
+; the end of the 256 byte bank is reached
 ;
-;
-X355A:
+WriteMemory:
 	MOVX	@R0,A
 	INC	R0
 	CJNE	R0,#0,X3561
 	INC	P2
 X3561:	RET	
+
 ;
 ; # reset routine
 ;
@@ -7540,7 +7544,7 @@ X3568:	MOV	DPTR,#TonePresets			; tone preset table
 X3572:	MOV	R3,#1FH
 X3574:	CLR	A
 	MOVC	A,@A+DPTR
-	ACALL	X355A
+	ACALL	WriteMemory
 	INC	DPTR
 	DJNZ	R3,X3574
 	DJNZ	R2,X3572
@@ -7558,7 +7562,7 @@ X3585:	LCALL	X03B5
 X358F:	MOV	R3,#6
 X3591:	CLR	A
 	MOVC	A,@A+DPTR
-	ACALL	X355A
+	ACALL	WriteMemory
 	INC	DPTR
 	DJNZ	R3,X3591
 	DJNZ	R2,X358F
@@ -7587,7 +7591,7 @@ X35A4:	MOV	A,R2
 	MOV	R3,#0AH
 X35C3:	MOVX	A,@DPTR
 	ANL	A,#3FH
-	ACALL	X355A
+	ACALL	WriteMemory
 	INC	DPTR
 	DJNZ	R3,X35C3
 	INC	R2
