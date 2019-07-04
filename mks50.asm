@@ -99,30 +99,30 @@ ENDIF
 ; 0000H - Reset
 ; 0003H - External Interrupt 0
 ; 000BH - Timer 0
-; 0013H - External Interupt 1
+; 0013H - External Interrupt 1
 ; 001BH - Timer 1
 ; 0023H - Serial Port
 ;
 
 	ORG	0
 
-ResetIRQ:
+Reset_IRQ:
 	AJMP	START						; jump to program start
 	DB	0FFH						; padding
 
-ExternalIRQ0:
+External0_IRQ:
 	RETI	
 	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
 
-Timer0IRQ:
+Timer0_IRQ:
 	RETI	
 	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
 
-ExternalIRQ1:
+External1_IRQ:
 	RETI	
 	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
 
-Timer1IRQ:
+Timer1_IRQ:
 	RETI	
 
 X001C:
