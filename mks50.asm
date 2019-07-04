@@ -94,32 +94,41 @@ ENDM
 ENDIF
 
 ;
+; System Interrupt Locations
 ;
+; 0000H - Reset
+; 0003H - External Interrupt 0
+; 000BH - Timer 0
+; 0013H - External Interupt 1
+; 001BH - Timer 1
+; 0023H - Serial Port
 ;
-	ORG	0								; program origin begins at $0000 (first byte of program ROM)
-;
+
+	ORG	0
+
+ResetIRQ:
 	AJMP	START						; jump to program start
-;
-;
-; ## VECTOR TABLES ##
-;
-X0002:
-	DB	0FFH									; spacer byte
+	DB	0FFH						; padding
+
+ExternalIRQ0:
 	RETI	
-	DB	0FFH,0FFH,0FFH							; spacer bytes
-X0007:	
-	DB	0FFH,0FFH,0FFH,0FFH						; spacer bytes
+	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
+
+Timer0IRQ:
 	RETI	
-	DB	0FFH,0FFH,0FFH,0FFH						; spacer bytes
-X0010:
-	DB	0FFH,0FFH,0FFH							; spacer bytes
+	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
+
+ExternalIRQ1:
 	RETI	
-X0014:
-	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; spacer bytes
+	DB	0FFH,0FFH,0FFH,0FFH,0FFH,0FFH,0FFH		; padding
+
+Timer1IRQ:
 	RETI	
+
 X001C:
-	DB	01H,02H,04H,08H,10H,20H,00H				; apparently this space is 'abused' as a table related to MIDI
-X0023:
+	DB	01H,02H,04H,08H,10H,20H,00H			; apparently this space is 'abused' as a table related to MIDI
+
+SerialIRQ:
 	PUSH	PSW
 	SETB	RS0
 	MOV	R5,A
