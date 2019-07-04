@@ -12,5 +12,10 @@ are then re-written back to P2 after a serial interrupt.
    f0:             : Unknown ($34fb)
    fc:             : Unknown ($0102,$02c8,$03bf)
    fd:             : MIDI TX buffer ($002e,$06ec)
+
    fe:             : Unknown ($0153,$0270,$03b8,$276f)
+     :06 - 0c set to $c0 at boot ($0738)
+     :0d - 12 set to [1 .. 6]    ($075c)
+     :80 - 8f set to $00
+
    ff:             : Unknown ($259f)

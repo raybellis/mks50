@@ -3230,7 +3230,7 @@ X1303:	JNB	27H.3,X135D
 	ANL	A,#0FH
 	MOV	DPTR,#XFE90
 	MOV	B,#6
-X1313:	LCALL	GetSubString
+X1313:	LCALL	CalcOffsetBySize
 	LCALL	SelectBank_FE
 	MOV	R0,#1AH
 X131B:	MOVX	A,@R0
@@ -3515,7 +3515,7 @@ X14F3:
 	ANL	21H,#3FH
 	SJMP	X14FB
 ;
-; # display related
+; (mostly not) display related
 ;
 X14F8:	MOV	78H,#80H
 X14FB:	JNB	28H.1,X1503
@@ -3532,7 +3532,7 @@ X1507:	MOV	27H,#0
 ; # LCD Display Cursor Off
 ;
 CursorOff:
-	MOV	A,#0CH							; send "cursor invisible" command to LCD (turns LCD display cursor off)
+	MOV	A,#0CH				; send "cursor invisible" command to LCD (turns LCD display cursor off)
 	ACALL	DisplayCmnd
 	ACALL	Delay1A
 	RET	
@@ -3554,7 +3554,7 @@ X152C:
 	CLR	ACC.7
 	MOV	DPTR,#XF000
 	MOV	B,#15H
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 	RET	
 ;
 X153A:	MOV	R0,#62H
@@ -3687,7 +3687,7 @@ X15FB:
 	CJNE	R0,#8,X15FB			; write 8 characters to fill 2nd half of display
 	RET	
 ;
-; # display related
+; Copies one of 16 six-byte tables (chord preset?) from $fe90 to $fe:1a - $fe:1f
 ;
 X1606:
 	LCALL	SelectBank_FE
@@ -3695,13 +3695,13 @@ X1606:
 	ANL	A,#0FH
 	MOV	B,#6
 	MOV	DPTR,#XFE90
-	LCALL	GetSubString
-	MOV	R0,#1AH						; initialize value to $1A (26 decimal) ?? -- possibly display positioning!
+	LCALL	CalcOffsetBySize
+	MOV	R0,#1AH
 X1618:	MOVX	A,@DPTR
 	MOVX	@R0,A
 	INC	DPTR
 	INC	R0
-	CJNE	R0,#20H,X1618			; keep hoping back until value is $20 (32 decimal)
+	CJNE	R0,#20H,X1618
 	LCALL	SelectBank_80
 	RET	
 ;
@@ -3712,7 +3712,7 @@ X1623:
 	CLR	ACC.7
 	MOV	B,#1FH
 	MOV	DPTR,#XE000
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 	RET	
 ;
 X1631:
@@ -3979,7 +3979,7 @@ X179A:	SWAP	A
 	MOV	A,R4
 	MOV	DPTR,#TapeStrs		; base address to large string table with: 'Bulk Dump  Bulk*Dump  Bulk Load  Bulk*Load  '
 	MOV	B,#0BH				; number of characters per string (11)
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 	LCALL	HalfPrinter
 	ACALL	Delay2A
 	MOV	R0,#0
@@ -3994,7 +3994,7 @@ X17B2:	INC	R0
 	MOV	DPTR,#PTCMStrs			; '[T-a][T-b][P-A][P-B][CM ]' string
 	MOV	A,R3
 	MOV	B,#5				; number of characters per string (5)
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 X17C4:	INC	R0
 	CLR	A
 	MOVC	A,@A+DPTR
@@ -4063,7 +4063,7 @@ X1840:	MOV	78H,A
 X1849:
 	MOV	B,#8					; number of characters per string, probably
 	MOV	DPTR,#ParamStrs			; base address of a large string table
-	ACALL	GetSubString
+	ACALL	CalcOffsetBySize
 	ACALL	HalfPrinter
 	LCALL	Delay2A
 	ScrPos	R4, 8				; move cursor to column 8
@@ -4651,7 +4651,7 @@ X1B80:	MOV	A,78H
 	MOV	R3,A
 	MOV	B,#10H				; number of characters per string, probably (16)
 	MOV	DPTR,#PrefStrs			; base address of a large string table
-	ACALL	GetSubString
+	ACALL	CalcOffsetBySize
 	JNB	26H.7,X1B94
 	JNB	29H.4,X1B94
 	MOV	DPTR,#MIDIvelChgStr			; 'MIDI velchg =   ' string
@@ -4863,9 +4863,9 @@ X1CA4:
 	DB	80H,40H,20H,10H
 	DB	08H,04H,02H,01H
 ;
-; # breaks up string tables into a specific string? -- register B is length of string to fetch?
+; Calculates DPTR + (A * B)
 ;
-GetSubString:
+CalcOffsetBySize:
 	MUL	AB
 	ADD	A,DPL
 	MOV	DPL,A
@@ -4947,7 +4947,7 @@ X1D13:	MOV	78H,A
 X1D1C:
 	MOV	DPTR,#SettingStrs		; base address of string table beginning with 'TUNE    =  4    '
 	MOV	B,#10H				; length of strings is 16 per
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 	LCALL	PrintFullStr
 	AJMP	X1DB8
 ;
@@ -6480,7 +6480,7 @@ X2717:	MOV	B,#1FH
 ;
 X271F:	MOV	B,#15H
 	CJNE	R3,#1,X273D				; something related to 'Bulk DT-MISMATCH' function
-X2725:	LCALL	GetSubString
+X2725:	LCALL	CalcOffsetBySize
 X2728:	MOV	R1,#0
 	SETB	28H.1
 	SETB	P1.3
@@ -7579,7 +7579,7 @@ X35A2:	MOV	R2,#0
 X35A4:	MOV	A,R2
 	MOV	B,#1FH
 	MOV	DPTR,#XE000
-	LCALL	GetSubString
+	LCALL	CalcOffsetBySize
 	MOV	A,#15H
 	LCALL	X1CBC
 	MOV	A,R2
@@ -7964,7 +7964,7 @@ XFE62	EQU	0FE62H			; unknown
 XFE63	EQU	0FE63H			; unknown
 XFE6D	EQU	0FE6DH			; unknown
 XFE73	EQU	0FE73H			; unknown
-XFE90	EQU	0FE90H			; unknown
+XFE90	EQU	0FE90H			; probably chord tables (16 * 6 = $60 bytes)
 XFEF0	EQU	0FEF0H			; unknown
 XFEF1	EQU	0FEF1H			; unknown
 XFEF2	EQU	0FEF2H			; unknown
