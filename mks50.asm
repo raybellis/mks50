@@ -647,7 +647,7 @@ X0387:
 	MOV	61H,A
 	LCALL	X14FB
 	CLR	23H.3
-	LCALL	X152C
+	LCALL	GetPatchTableOffset
 	LCALL	X153A
 	LCALL	X151A
 	LCALL	X1606
@@ -3333,7 +3333,7 @@ X13D0:	MOV	A,@R0
 X13D4:	ANL	24H,#0F0H
 	JB	23H.3,X13F1
 	ACALL	X14F3
-	ACALL	X152C
+	ACALL	GetPatchTableOffset
 	ACALL	X153A
 	LCALL	X23BA
 	ACALL	X1606
@@ -3421,7 +3421,7 @@ X1462:
 	MOV	ACC.6,C
 	JB	23H.3,X1495
 	MOV	61H,A
-	LCALL	X152C
+	LCALL	GetPatchTableOffset
 	MOV	R1,#62H
 X1475:	MOV	A,@R1
 	MOVX	@DPTR,A
@@ -3549,7 +3549,10 @@ X1525:	ACALL	X1599
 	ACALL	Delay2A
 	RET	
 ;
-X152C:
+; Index into a 128 entry table of 21 bytes each at $f000
+; appears to be the patch memories?
+;
+GetPatchTableOffset:
 	MOV	A,61H
 	CLR	ACC.7
 	MOV	DPTR,#XF000

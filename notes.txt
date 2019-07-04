@@ -16,6 +16,11 @@ are then re-written back to P2 after a serial interrupt.
    fe:             : Unknown ($0153,$0270,$03b8,$276f)
      :06 - 0c set to $c0 at boot ($0738)
      :0d - 12 set to [1 .. 6]    ($075c)
+     :1a - 1f      : current Chord Preset?
      :80 - 8f set to $00
 
    ff:             : Unknown ($259f)
+
+Memory Map:
+
+   f000 - fa7f     : Patches?  (128 x 21 bytes)
