@@ -5,11 +5,12 @@ peripherals are being accessed.
 Certain functions write to P2 and to $77, and the contents of $77
 are then re-written back to P2 after a serial interrupt.
 
-   80:00 - 80:07   : LCD output buffer ($1078)
-   90:             : Unknown ($2787)
-   a0:             : Unknown ($279e)
-   e0:00 - e7:bf   : Tone Data
-   fc:             : Unknown ($03bc)
-   fd:             : MIDI TX buffer? ($06e9)
-   fe:             : Unknown ($03b5)
-   ff:             : Unknown ($259c)
+   80:00 - 80:07   : LCD output buffer ($107b,$2994,$354d)
+   90:             : Unknown ($278a)
+   a0:             : Unknown ($27a1)
+   e0:00 - e7:bf   : Tone Data ($356b)
+   f0:             : Unknown ($34fb)
+   fc:             : Unknown ($0102,$02c8,$03bf)
+   fd:             : MIDI TX buffer ($002e,$06ec)
+   fe:             : Unknown ($0153,$0270,$03b8,$276f)
+   ff:             : Unknown ($259f)
