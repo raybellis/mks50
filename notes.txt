@@ -23,4 +23,6 @@ are then re-written back to P2 after a serial interrupt.
 
 Memory Map:
 
+   e000 - ef7f     : Tones?  (128 x 31 bytes)
    f000 - fa7f     : Patches?  (128 x 21 bytes)
+   fe90 - febf     : Chord Presets? (16 x 6 bytes)

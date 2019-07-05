@@ -3555,7 +3555,7 @@ X1525:	ACALL	X1599
 GetPatchTableOffset:
 	MOV	A,61H
 	CLR	ACC.7
-	MOV	DPTR,#XF000
+	MOV	DPTR,#PATCHES
 	MOV	B,#15H
 	LCALL	CalcOffsetBySize
 	RET	
@@ -3714,7 +3714,7 @@ X1623:
 	MOV	A,62H
 	CLR	ACC.7
 	MOV	B,#1FH
-	MOV	DPTR,#XE000
+	MOV	DPTR,#TONES
 	LCALL	CalcOffsetBySize
 	RET	
 ;
@@ -7369,7 +7369,7 @@ X3457:
 ;
 ;
 X346E:
-	MOV	DPTR,#XE000
+	MOV	DPTR,#TONES
 	MOV	R0,#0
 	MOV	R2,#20H
 X3475:	MOVX	A,@DPTR
@@ -7580,7 +7580,7 @@ X359C:
 X35A2:	MOV	R2,#0
 X35A4:	MOV	A,R2
 	MOV	B,#1FH
-	MOV	DPTR,#XE000
+	MOV	DPTR,#TONES
 	LCALL	CalcOffsetBySize
 	MOV	A,#15H
 	LCALL	X1CBC
@@ -7958,8 +7958,8 @@ XA000	EQU	0A000H			; RAM pointer
 XC00C	EQU	0C00CH			; possibly peripheral pointer?
 XC00D	EQU	0C00DH			; possibly peripheral pointer?
 XC00E	EQU	0C00EH			; possibly peripheral pointer?
-XE000	EQU	0E000H			; possibly peripheral pointer?
-XF000	EQU	0F000H			; possibly peripheral pointer?
+TONES	EQU	0E000H			; probably the tone memories in RAM
+PATCHES	EQU	0F000H			; probably the patch memories in RAM
 XFE58	EQU	0FE58H			; unknown
 XFE59	EQU	0FE59H			; unknown
 XFE62	EQU	0FE62H			; unknown
