@@ -5872,7 +5872,7 @@ X2348:
 X2351:	MOV	A,R3
 	RL	A
 	MOV	R1,A
-	MOV	DPTR,#X29F1			; probably a data table which supplies offsets for sub-routines below
+	MOV	DPTR,#X29F1
 	MOVC	A,@A+DPTR
 	XCH	A,R1
 	INC	A
@@ -5880,60 +5880,61 @@ X2351:	MOV	A,R3
 	MOV	DPTR,#X235F
 	JMP	@A+DPTR
 ;
-; # sub-routines accessed by offsets supplied by table referenced above (X29F1)
+; sub-routines accessed by offsets supplied by
+; table X235F with R1 supplied by table at 29F1
 ;
 X235F:
 	MOV	A,@R1
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2362:	MOV	A,@R1
 	ANL	A,#0C0H
 	RL	A
 	RL	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2369:	MOV	A,@R1
 	ANL	A,#30H
 	SWAP	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X236F:	MOV	A,@R1
 	ANL	A,#0CH
 	RR	A
 	RR	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2376:	MOV	A,@R1
 	ANL	A,#3
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X237B:	MOV	A,@R1
 	ANL	A,#0E0H
 	SWAP	A
 	RR	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2382:	MOV	A,@R1
 	ANL	A,#1CH
 	RR	A
 	RR	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2389:	MOV	A,@R1
 	ANL	A,#40H
 	RL	A
 	RL	A
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2390:	MOV	A,@R1
 	ANL	A,#0FH
 	AJMP	X239F
 ;
-	MOV	A,@R1
+X2395:	MOV	A,@R1
 	ANL	A,#0F0H
 	AJMP	X239E
 ;
-	MOV	A,@R1
+X239A:	MOV	A,@R1
 	ANL	A,#0FH
 	SWAP	A
 X239E:	RR	A
@@ -6832,8 +6833,7 @@ X29A3:	; <top of loop> falls through from above
 	CJNE	R0,#8,X29A3		;  hop back to top of loop until R0 is 8
 	RET	
 ;
-; ### DATA TABLE ###
-; interleaved values for R1, plus offset from X21E7
+; pairs of (values for R1, offset from X21E7)
 ;
 X29A9:
 	DB	2FH,(X21F4 - X21E7)
@@ -6873,18 +6873,45 @@ X29A9:
 	DB	32H,00H
 	DB	35H,(X2240 - X21E7)
 ;
-; # appears to be a data table of unknown length -- contains offsets for a jump routine
+; pairs of (values for R1, offset from X235F)
 ;
 X29F1:
-	DB	2FH,0AH,2FH,10H,2FH,17H,30H,17H
-	DB	30H,23H,30H,1CH,31H,0AH,31H,10H
-	DB	31H,17H,31H,03H,2FH,2AH,36H,00H
-	DB	37H,00H,33H,36H,38H,00H,39H,00H
-	DB	3AH,00H,3BH,00H,3DH,00H,3CH,00H
-	DB	33H,3BH,34H,36H,3EH,00H,34H,3BH
-	DB	3FH,00H,40H,00H,41H,00H,42H,00H
-	DB	43H,00H,44H,00H,45H,00H,46H,00H
-	DB	47H,00H,35H,36H,32H,00H,35H,31H
+	DB	2FH,(X2369 - X235F)
+	DB	2FH,(X236F - X235F)
+	DB	2FH,(X2376 - X235F)
+	DB	30H,(X2376 - X235F)
+	DB	30H,(X2382 - X235F)
+	DB	30H,(X237B - X235F)
+	DB	31H,(X2369 - X235F)
+	DB	31H,(X236F - X235F)
+	DB	31H,(X2376 - X235F)
+	DB	31H,(X2362 - X235F)
+	DB	2FH,(X2389 - X235F)
+	DB	36H,00H
+	DB	37H,00H
+	DB	33H,(X2395 - X235F)
+	DB	38H,00H
+	DB	39H,00H
+	DB	3AH,00H
+	DB	3BH,00H
+	DB	3DH,00H
+	DB	3CH,00H
+	DB	33H,(X239A - X235F)
+	DB	34H,(X2395 - X235F)
+	DB	3EH,00H
+	DB	34H,(X239A - X235F)
+	DB	3FH,00H
+	DB	40H,00H
+	DB	41H,00H
+	DB	42H,00H
+	DB	43H,00H
+	DB	44H,00H
+	DB	45H,00H
+	DB	46H,00H
+	DB	47H,00H
+	DB	35H,(X2395 - X235F)
+	DB	32H,00H
+	DB	35H,(X2390 - X235F)
 ;
 ;
 ;
