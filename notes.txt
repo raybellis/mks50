@@ -26,3 +26,15 @@ Memory Map:
    e000 - ef7f     : Tones?  (128 x 31 bytes)
    f000 - fa7f     : Patches?  (128 x 21 bytes)
    fe90 - febf     : Chord Presets? (16 x 6 bytes)
+
+Peripheral Ports
+
+   P1.7 = Tape output
+   P1.6 = IC14 pin 4 (TBD)
+   P1.5 = IC18 4052 input A (HPF)
+   P1.4 = IC18 4052 input B ( " )
+   P1.3 = MIDI LED
+
+   RxD  = MIDI In
+   TxD  = MIDI Out
+   T0   = Tape Input
