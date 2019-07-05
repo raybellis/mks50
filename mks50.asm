@@ -126,38 +126,42 @@ Timer1_IRQ:
 X001C:
 	DB	01H,02H,04H,08H,10H,20H,00H			; apparently this space is 'abused' as a table related to MIDI
 
+;
+; Serial (MIDI) Interrupt Handling (fixed location $0023)
+;
 SerialIRQ:
-	PUSH	PSW
-	SETB	RS0
-	MOV	R5,A
-	JNB	TI,X0046
-	CLR	TI
-	MOV	A,R0
-	MOV	P2,#0FDH
-	CJNE	A,RB3R5,X0038
-	CLR	20H.3
-	AJMP	X003C
+	PUSH	PSW				; save processor status
+	SETB	RS0				; select register bank 1 (only used for serial IO)
+	MOV	R5,A				; save A register
+	JNB	TI,_rxNext			; if no TX interrupt, go to RX code
+
+						; MIDI TX interrupt received
+	CLR	TI				; clear TX IRQ flag
+	MOV	A,R0				; get the position of the last sent byte (RB1R0)
+	MOV	P2,#0FDH			; select IC6 bank $FD (tx buffer?)
+	CJNE	A,RB3R5,_txNext			; compare position to last saved byte (RB3R5)
+	CLR	20H.3				; clear "waiting for an interrupt" flag
+	AJMP	_txCleanup			; buffer empty - go cleanup
+_txNext:
+	MOVX	A,@R0				; load the byte from the TX buffer
+	MOV	SBUF,A				; send the byte
+	INC	R0				; increment TX buffer position (RB1R0)
+_txCleanup:
+	MOV	P2,LAST_BANK			; restore IC6 bank setting
+	JB	RI,_rxNext			; go to RX code if there was also an RX interrupt
+	MOV	A,R5				; restore the A register
+	POP	PSW				; restore processor status (inc. selected register bank)
+	RETI					; and we're done...
+
+; MIDI RX interrupt received
+_rxNext:
+	CLR	RI				; clear RX IRQ flag
+	ORL	7AH,#3FH			; set bottom six bits of $7a to one (reason TBD)
+	MOV	A,SBUF				; receive the byte
+	JB	ACC.7,_rxCommand		; top bit set - must be a MIDI command
+	AJMP	_rxData
 ;
-; # MIDI Rx ?
-;
-X0038:
-	MOVX	A,@R0
-	MOV	SBUF,A
-	INC	R0
-X003C:	MOV	P2,LAST_BANK
-	JB	RI,X0046
-	MOV	A,R5
-	POP	PSW
-	RETI	
-;
-X0046:
-	CLR	RI
-	ORL	7AH,#3FH
-	MOV	A,SBUF
-	JB	ACC.7,X0052
-	AJMP	X00E2
-;
-X0052:
+_rxCommand:
 	CJNE	A,#0F0H,X0055
 X0055:	JNC	X00BD
 	ANL	21H,#3FH
@@ -182,7 +186,7 @@ X007C:	MOV	R4,#2
 	CJNE	R2,#0C0H,X0083			; checking for specific MIDI code?
 	SJMP	X0086
 ;
-X0083:	CJNE	R2,#0D0H,X0087		; checking for specific MIDI code?
+X0083:	CJNE	R2,#0D0H,X0087			; checking for specific MIDI code?
 X0086:	DEC	R4
 X0087:	SETB	20H.7
 X0089:	MOV	A,R5
@@ -242,7 +246,7 @@ X00DC:
 	CJNE	A,#0F7H,X00B9
 	LJMP	X2000
 ;
-X00E2:
+_rxData:
 	JNB	20H.7,X0089
 	JNB	21H.7,X00EB
 	LJMP	X2034
@@ -1225,25 +1229,29 @@ X06E3:
 ; # Tx MIDI SysEx byte? -- likely!
 ;
 TxMIDIbyte:
-	MOV	LAST_BANK,#0FDH
-	MOV	P2,#0FDH
-	MOV	TH0,A
-	MOV	A,RB3R5
-	MOV	R0,A
-	INC	A
-X06F5:	CJNE	A,RB1R0,X06FA
-	SJMP	X06F5
-;
-X06FA:	XCH	A,TH0
-	MOVX	@R0,A
-	MOV	A,TH0
-	CLR	ES
-	JB	20H.3,X0708
-	SETB	TI
-	SETB	20H.3
-X0708:	MOV	RB3R5,A
-	SETB	ES
-	RET	
+	MOV	LAST_BANK,#0FDH			; Set the last bank to $fd
+	MOV	P2,#0FDH			; Select bank $fd (TX buffer)
+	MOV	TH0,A				; (ab)use TH0 to store the value to be sent
+	MOV	A,RB3R5				; get current buffer write posistion (RB3R5)
+	MOV	R0,A				; save it in R0
+	INC	A				; increment buffer write position
+
+_txWaitLoop:
+	CJNE	A,RB1R0,_txWriteBuffer		; compare to the last sent position (RB1R0)
+	SJMP	_txWaitLoop			; loop until there's space in the buffer
+
+_txWriteBuffer:
+	XCH	A,TH0				; get back the value to be sent, storing pos in TH0
+	MOVX	@R0,A				; store it in the TX buffer
+	MOV	A,TH0				; move buffer write position back into A
+	CLR	ES				; disable serial interrupts
+	JB	20H.3,_txFinish			; leave if we're already waiting for pending interrupts
+	SETB	TI				; trigger the interrupt
+	SETB	20H.3				; flag that interrupts are pending
+_txFinish:
+	MOV	RB3R5,A				; save the last written position (RB3R5)
+	SETB	ES				; enable serial interrupts
+	RET
 ;
 ; # MIDI SysEx Handshaking Tx
 ;
