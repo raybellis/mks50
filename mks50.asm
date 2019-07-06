@@ -4259,26 +4259,26 @@ X1936:	MOV	A,@R1
 ;
 ;
 ;
-	MOV	A,@R1
+X193C:	MOV	A,@R1
 	ANL	A,#0FH
 	AJMP	X1932
 ;
 ;
 ;
-	MOV	A,@R1
+X1941:	MOV	A,@R1
 X1942:	ANL	A,#3
 	AJMP	X1932
 ;
 ;
 ;
-	MOV	A,@R1
+X1946:	MOV	A,@R1
 	RR	A
 	RR	A
 	AJMP	X1942
 ;
 ;
 ;
-	MOV	A,@R1
+X194B:	MOV	A,@R1
 	RR	A
 	RR	A
 	SWAP	A
@@ -4286,7 +4286,7 @@ X1942:	ANL	A,#3
 ;
 ;
 ;
-	MOV	A,@R1
+X1951:	MOV	A,@R1
 	RR	A
 X1953:	RR	A
 	ANL	A,#7
@@ -4294,13 +4294,13 @@ X1953:	RR	A
 ;
 ;
 ;
-	MOV	A,@R1
+X1958:	MOV	A,@R1
 	SWAP	A
 	AJMP	X1953
 ;
 ;
 ;
-	MOV	A,@R1
+X195C:	MOV	A,@R1
 	JB	ACC.6,X1968
 	MOV	R5,#4FH				; 'O' character
 	MOV	R6,#46H				; 'F' character
@@ -4317,7 +4317,7 @@ X1968:
 ;
 ;
 ;
-	MOV	B,@R1
+X1970:	MOV	B,@R1
 	MOV	A,#4
 	JB	B.5,X197C
 	JNB	B.4,X1982
@@ -4344,7 +4344,7 @@ X198A:	LCALL	X31AC	; gets numeric character for value?
 ;
 ;
 ;
-	MOV	A,@R1
+X1997:	MOV	A,@R1
 	MOV	R5,#20H				; ' ' space character?
 	JNB	ACC.3,X199F
 	MOV	R5,#44H				; 'D' character?
@@ -4364,9 +4364,9 @@ X19AF:
 	MOV	R7,#6EH				; 'n' character?
 X19B5:	AJMP	X19E2
 ;
-; # how is this reached? offset table?
+; # how is this reached? offset table? (yes!)
 ;
-	MOV	A,@R1
+X19B7:	MOV	A,@R1
 	RR	A
 	RR	A
 	MOV	R5,#20H				; ' ' space character?
@@ -4381,9 +4381,9 @@ X19C1:	MOV	R6,#4
 	INC	R7
 X19CC:	AJMP	X19E2
 ;
-; # how is this reached? offset table?
+; # how is this reached? offset table? (yes!)
 ;
-	MOV	R5,#20H				; ' ' space character?
+X19CE:	MOV	R5,#20H				; ' ' space character?
 	JNB	2FH.1,X19D5
 	MOV	R5,#44H				; 'D' character?
 X19D5:	JB	2FH.0,X19DE
@@ -6843,7 +6843,7 @@ X29A3:	; <top of loop> falls through from above
 	CJNE	R0,#8,X29A3		;  hop back to top of loop until R0 is 8
 	RET	
 ;
-; pairs of (values for R1, offset from X21E7)
+; 36 pairs of (values for R1, offset from X21E7)
 ;
 X29A9:
 	DB	2FH,(X21F4 - X21E7)
@@ -6883,7 +6883,7 @@ X29A9:
 	DB	32H,(X21E7 - X21E7)
 	DB	35H,(X2240 - X21E7)
 ;
-; pairs of (values for R1, offset from X235F)
+; 36 pairs of (values for R1, offset from X235F)
 ;
 X29F1:
 	DB	2FH,(X2369 - X235F)
@@ -6957,19 +6957,45 @@ X2A53:
 	DB	6AH,(X23ED - X23D8)			; 15H
 	DB	24H,(X23F2 - X23D8)			; 1AH
 ;
-; # table with offsets for jumps to specific routines
+; 36 pairs of (values for R1, offset from X1936)
 ;
 X2A6D:
-	DB	31H,3AH,0B6H,00H,0B7H,00H,2FH,81H
-	DB	33H,00H,35H,06H,30H,0BH,30H,1BH
-	DB	30H,22H,31H,10H,31H,0BH,0B8H,00H
-	DB	0B9H,00H
-	DB	31H,15H,0BAH,00H,0BBH,00H,0BCH,00H
-	DB	2FH,61H,0BDH,00H,33H,06H,34H,00H
-	DB	0BEH,00H,2FH,98H,34H,06H,2FH,26H
-	DB	0B2H,00H,0BFH,00H,0C0H,00H,0C1H,00H
-	DB	0C2H,00H,0C3H,00H,0C4H,00H,0C5H,00H
-	DB	0C6H,00H,0C7H,00H,35H,00H
+	DB	031H,(X1970 - X1936)			; 3AH
+	DB	0B6H,(X1936 - X1936)			; 00H
+	DB	0B7H,(X1936 - X1936)			; 00H
+	DB	02FH,(X19B7 - X1936)			; 81H
+	DB	033H,(X1936 - X1936)			; 00H
+	DB	035H,(X193C - X1936)			; 06H
+	DB	030H,(X1941 - X1936)			; 0BH
+	DB	030H,(X1951 - X1936)			; 1BH
+	DB	030H,(X1958 - X1936)			; 22H
+	DB	031H,(X1946 - X1936)			; 10H
+	DB	031H,(X1941 - X1936)			; 0BH
+	DB	0B8H,(X1936 - X1936)			; 00H
+	DB	0B9H,(X1936 - X1936)			; 00H
+	DB	031H,(X194B - X1936)			; 15H
+	DB	0BAH,(X1936 - X1936)			; 00H
+	DB	0BBH,(X1936 - X1936)			; 00H
+	DB	0BCH,(X1936 - X1936)			; 00H
+	DB	02FH,(X1997 - X1936)			; 61H
+	DB	0BDH,(X1936 - X1936)			; 00H
+	DB	033H,(X193C - X1936)			; 06H
+	DB	034H,(X1936 - X1936)			; 00H
+	DB	0BEH,(X1936 - X1936)			; 00H
+	DB	02FH,(X19CE - X1936)			; 98H
+	DB	034H,(X193C - X1936)			; 06H
+	DB	02FH,(X195C - X1936)			; 26H
+	DB	0B2H,(X1936 - X1936)			; 00H
+	DB	0BFH,(X1936 - X1936)			; 00H
+	DB	0C0H,(X1936 - X1936)			; 00H
+	DB	0C1H,(X1936 - X1936)			; 00H
+	DB	0C2H,(X1936 - X1936)			; 00H
+	DB	0C3H,(X1936 - X1936)			; 00H
+	DB	0C4H,(X1936 - X1936)			; 00H
+	DB	0C5H,(X1936 - X1936)			; 00H
+	DB	0C6H,(X1936 - X1936)			; 00H
+	DB	0C7H,(X1936 - X1936)			; 00H
+	DB	035H,(X1936 - X1936)			; 00H
 ;
 ; # table with offsets for jumps to specific routines
 ;
