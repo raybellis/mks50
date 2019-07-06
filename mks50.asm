@@ -102,7 +102,7 @@ ENDIF
 ; 0023H - Serial Port
 ;
 
-	ORG	0
+	ORG	0000H
 
 Reset_IRQ:
 	AJMP	START						; jump to program start
@@ -1408,10 +1408,10 @@ X07D5:
 	XCH	A,R3
 	RET	
 ;
-	REPT 28
-	DB	0FFH			; spacer bytes to keep alignment to $0800
-	ENDM	
+; Alignment to 0800H for AJMP/ACALL (29 bytes padding)
 ;
+	ORG	0800H
+
 X0800:
 	LCALL	SelectBank_FE
 	MOV	R4,#5
@@ -2751,10 +2751,12 @@ X0F6F:	SETB	C
 	DEC	A
 	MOVC	A,@A+DPTR
 	RET	
+
 ;
-	REPT 134
-	DB	0FFH			; spacer bytes to keep alignment to $1000
-	ENDM
+; Alignment to 1000H for AJMP/ACALL (134 bytes padding)
+;
+	ORG	1000H
+
 ;
 ; ##############################
 ; # LCD DISPLAY INITIALIZATION #
@@ -4022,13 +4024,16 @@ X17CC:	CLR	25H.1
 	ENDM
 ;	
 	REPT 16
-	DB	00H			; spacer bytes to keep alignment to $1800
+	DB	00H		; spacer bytes to keep alignment to $1800
 	ENDM
 ;	
 	REPT 16
 	DB	0FFH		; spacer bytes to keep alignment to $1800
 	ENDM
 ;
+; Alignment to 1800H for AJMP/ACALL (49 bytes padding)
+;
+	ORG	1800H
 X1800:
 	LCALL	SelectBank_80
 	MOV	A,27H
@@ -5367,15 +5372,11 @@ X1F8A:	AJMP	X1C18
 ;
 SetNoteStr:
 	DB	'Set note'
+
 ;
+; Alignment to 2000H for AJMP/ACALL (108 bytes padding)
 ;
-;
-	REPT 108
-	DB	0FFH		; spacer bytes to keep alignment to $2000
-	ENDM
-;	
-;
-;
+	ORG	2000H
 X2000:
 	JNB	28H.7,X202D
 	CJNE	R3,#4,X202D
@@ -6571,9 +6572,9 @@ X27AB:	JB	28H.0,X27AA
 X27AE:	CLR	A
 	RET	
 ;
-	REPT 80
-	DB	0FFH		; spacer bytes to keep alignment to $2800
-	ENDM
+; Alignment to 2800H for AJMP/ACALL (80 bytes padding)
+;
+	ORG	2800H
 X2800:
 	MOV	SP,#0DH
 	LJMP	X274D
