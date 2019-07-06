@@ -2939,7 +2939,7 @@ X10E0:
 	RR	A
 	SWAP	A
 	MOV	7EH,A
-	ScrPos	A, 9					; move position to column 9
+	ScrPos	A, 9				; move position to column 9
 	LCALL	DispFillx8
 	SETB	28H.5
 	RET	
@@ -2947,9 +2947,9 @@ X10E0:
 ; # VERY LIKELY DISPLAY RELATED!
 ;
 X1101:
-	MOV	A,#83H						; display positioning?
+	MOV	A,#83H				; display positioning?
 	LCALL	DispFillx8
-	MOV	A, #ScrCurs				; set cursor mode
+	MOV	A, #ScrCurs			; set cursor mode
 	ACALL	DisplayCmnd
 X110A:	AJMP	X113A
 ;
@@ -2962,7 +2962,7 @@ MorePrint:
 	MOV	R2,A
 	ScrPos	A, 10				; move position to column 10 (0-indexed)
 	JB	27H.1,X1119
-	MOV	A,#84H						; display positioning?
+	MOV	A,#84H				; display positioning?
 X1119:	LCALL	DispFillx8
 	CLR	27H.0
 	MOV	A,7DH
@@ -5064,14 +5064,23 @@ X1DB1:	MOV	A,7EH
 	MOV	7EH,A
 X1DB8:	; falls through from above, or jumped to by SETTING MENU
 	LCALL	SelectBank_80
-	MOV	A,R3						; this must decide which sub-routine needs to be run (must be no more than a value of 10 decimal, apparently)
-	MOV	DPTR,#X1DC4					; small table of offsets
+	MOV	A,R3				; this must decide which sub-routine needs to be run (must be no more than a value of 10 decimal, apparently)
+	MOV	DPTR,#X1DC4			; small table of offsets
 	MOVC	A,@A+DPTR
-	MOV	DPTR,#X1DCE					; base address for routines to jump to
-	JMP	@A+DPTR						; goes to $X1DCE + $64, $16, $23, etc.
+	MOV	DPTR,#X1DCE			; base address for routines to jump to
+	JMP	@A+DPTR				; goes to $X1DCE + $64, $16, $23, etc.
 ;
 X1DC4:
-	DB	64H,16H,23H,28H,38H,00H,2CH,30H,34H,3CH
+	DB	(X1E32 - X1DCE)			; 64H
+	DB	(X1DE4 - X1DCE)			; 16H
+	DB	(X1DF1 - X1DCE)			; 23H
+	DB	(X1DF6 - X1DCE)			; 28H
+	DB	(X1E06 - X1DCE)			; 38H
+	DB	(X1DCE - X1DCE)			; 00H
+	DB	(X1DFA - X1DCE)			; 2CH
+	DB	(X1DFE - X1DCE)			; 30H
+	DB	(X1E02 - X1DCE)			; 34H
+	DB	(X1E0A - X1DCE)			; 3CH
 
 X1DCE:
 	JB	28H.6,X1DD3
@@ -5088,30 +5097,30 @@ X1DD3:
 	LCALL	X1C56
 	SJMP	X1E1B
 ;
-	MOV	A,6FH
+X1DE4:	MOV	A,6FH
 	INC	A
 	LCALL	X1C56
 	CJNE	R6,#30H,X1DEF
 	MOV	R6,#20H
 X1DEF:	SJMP	X1E1B
 ;
-	MOV	C,20H.6
+X1DF1:	MOV	C,20H.6
 	CPL	C
 	SJMP	X1E0D
 ;
-	MOV	C,26H.6
+X1DF6:	MOV	C,26H.6
 	SJMP	X1E0C
 ;
-	MOV	C,25H.6
+X1DFA:	MOV	C,25H.6
 	SJMP	X1E0D
 ;
-	MOV	C,25H.4
+X1DFE:	MOV	C,25H.4
 	SJMP	X1E0D
 ;
-	MOV	C,25H.5
+X1E02:	MOV	C,25H.5
 	SJMP	X1E0D
 ;
-	MOV	C,23H.7
+X1E06:	MOV	C,23H.7
 	SJMP	X1E0D
 ;
 ;
@@ -5146,7 +5155,7 @@ X1E2B:	INC	R0
 	CJNE	R0,#8,X1E2B
 	AJMP	X1E98
 ;
-	MOV	A,60H
+X1E32:	MOV	A,60H
 	JNB	ACC.7,X1E41
 	ADD	A,#80H
 	MOV	B,#0AH

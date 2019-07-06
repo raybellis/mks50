@@ -38,3 +38,7 @@ Peripheral Ports
    RxD  = MIDI In
    TxD  = MIDI Out
    T0   = Tape Input
+
+Registers Used
+
+   20.3 = set to indicate that the MIDI TX buffer is ready
