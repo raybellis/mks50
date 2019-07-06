@@ -4710,7 +4710,7 @@ X1BBF:
 X1BC8:	ACALL	X1C56
 	AJMP	X1C31
 ;
-	MOV	A,@R1
+X1BCC:	MOV	A,@R1
 	MOV	R5,#2BH
 	MOV	R6,#20H
 	JNB	ACC.7,X1BD8
@@ -4729,12 +4729,12 @@ X1BE6:	MOV	A,B
 	MOV	R7,A
 	AJMP	X1C31
 ;
-	CLR	A
+X1BED:	CLR	A
 	JB	24H.4,X1BF2
 	CPL	A
 X1BF2:	SJMP	X1BF9
 ;
-; # how is this reached? offset table?
+; # how is this reached? offset table? (yes!)
 ;
 X1BF4:
 	MOV	A,@R1
@@ -4749,21 +4749,21 @@ X1BF9:	MOV	R7,#20H		; ' ' space character?
 X1C03:	MOV	R5,#4FH		; 'O' character?
 	AJMP	X1C31
 ;
-	MOV	A,@R1
+X1C07:	MOV	A,@R1
 	SWAP	A
 	ANL	A,#0FH
 	SJMP	X1BC8
 ;
-	MOV	A,@R1
+X1C0D:	MOV	A,@R1
 	ANL	A,#0FH
 	INC	A
 	AJMP	X1BC8
 ;
-	MOV	A,@R1
+X1C13:	MOV	A,@R1
 	DEC	A
 	SJMP	X1C18
 ;
-	MOV	A,@R1
+X1C17:	MOV	A,@R1
 X1C18:	MOV	B,#0CH
 	ADD	A,#0FCH
 	DIV	AB
@@ -7037,7 +7037,7 @@ X2AB5:
 	DB	0C7H,(X188C - X188C)			; 00H
 	DB	035H,(X188C - X188C)			; 00H
 ;
-; 11 pairs of (values for R1, offset from X1A6C
+; 11 pairs of (values for R1, offset from X1A6C)
 ;	
 X2AFD:
 	DB	68H,(X1A9C - X1A6C)			; 30H
@@ -7052,13 +7052,22 @@ X2AFD:
 	DB	6AH,(X1B18 - X1A6C)			; ACH
 	DB	6AH,(X1AF7 - X1A6C)			; 8BH
 
-; # table of offsets for a jump ??
+;
+; 11 pairs of (values for R1, offset from X1BBF)
 ;
 X2B13:
-	DB	68H,00H,66H,00H
-	DB	00H,2EH,65H,00H,67H,0DH,69H,0DH
-	DB	63H,58H,64H,54H,22H,35H,6AH,48H
-	DB	6AH,4EH
+	DB	68H,(X1BBF - X1BBF)			; 00H
+	DB	66H,(X1BBF - X1BBF)			; 00H
+	DB	00H,(X1BED - X1BBF)			; 2EH
+	DB	65H,(X1BBF - X1BBF)			; 00H
+	DB	67H,(X1BCC - X1BBF)			; 0DH
+	DB	69H,(X1BCC - X1BBF)			; 0DH
+	DB	63H,(X1C17 - X1BBF)			; 58H
+	DB	64H,(X1C13 - X1BBF)			; 54H
+	DB	22H,(X1BF4 - X1BBF)			; 35H
+	DB	6AH,(X1C07 - X1BBF)			; 48H
+	DB	6AH,(X1C0D - X1BBF)			; 4EH
+
 ; ######################################
 ; # BASE ADDRESS OF LARGE STRING TABLE #
 ; ######################################
